@@ -1,0 +1,41 @@
+version: '3.8' # Versión de Docker Compose que estamos usando.
+
+services:
+  php:
+    build:
+      context: ./src # Directorio donde se encuentra el Dockerfile.
+      dockerfile: Dockerfile # Dockerfile para crear la imagen personalizada de PHP.
+    container_name: php-app # Nombre del contenedor.
+    volumes:
+      - ./src:/var/www/html/ # Mapea la carpeta src local a /var/www/html/ en el contenedor.
+    ports:
+      - "8080:80" # Mapea el puerto 80 del contenedor al puerto 8080 del host.
+    depends_on:
+      - mysql # Se asegura de que el servicio MySQL se inicie antes de este contenedor.
+
+  mysql:
+    image: mysql:5.7 # Imagen de MySQL.
+    container_name: mysql-db # Nombre del contenedor.
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword # Contraseña de root para MySQL.
+      MYSQL_DATABASE: task_db # Base de datos que se creará al iniciar.
+      MYSQL_USER: user # Usuario de la base de datos.
+      MYSQL_PASSWORD: password # Contraseña del usuario de la base de datos.
+    ports:
+      - "3306:3306" # Mapea el puerto 3306 del contenedor al puerto 3306 del host.
+    volumes:
+      - db_data:/var/lib/mysql # Almacena los datos de MySQL en un volumen para persistencia.
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin # Imagen de phpMyAdmin.
+    container_name: phpmyadmin # Nombre del contenedor.
+    environment:
+      PMA_HOST: mysql-db # Dirección del servidor MySQL.
+      MYSQL_ROOT_PASSWORD: rootpassword # Contraseña de root para MySQL.
+    ports:
+      - "8081:80" # Mapea el puerto 80 del contenedor al puerto 8081 del host.
+    depends_on:
+      - mysql # Se asegura de que el servicio MySQL se inicie antes de este contenedor.
+
+volumes:
+  db_data: # Volumen para almacenar los datos de MySQL.
